@@ -111,10 +111,49 @@
         .row-modal-header h2 {
             margin: 0;
             font-size: 20px;
+            cursor: text;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .row-modal-header h2:hover {
+            background: #f0f0f0;
+        }
+
+        .row-modal-header h2:focus {
+            background: #fff9e6;
+            outline: 2px solid #ffc107;
+            outline-offset: 2px;
+        }
+
+        .row-modal-content-editable {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+            min-height: 100px;
+            outline: none;
+            cursor: text;
+            transition: border-color 0.2s;
+        }
+
+        .row-modal-content-editable:hover {
+            border-color: #999;
+        }
+
+        .row-modal-content-editable:focus {
+            border-color: #007bff;
+            outline: 2px solid #007bff;
+            outline-offset: -1px;
+        }
+
+        .row-modal-char-count {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
         }
 
         .row-modal-close {
-            background: transparent;
+            background: transparent !important;
             border: none;
             cursor: pointer;
             font-size: 24px;
@@ -128,6 +167,7 @@
         }
 
         .row-modal-close:hover {
+            background: transparent !important;
             color: #333;
         }
 
@@ -459,10 +499,13 @@
     <div id="rowModalOverlay" class="row-modal-overlay" style="display: none;" onclick="closeRowModal()"></div>
     <div id="rowModal" class="row-modal" style="display: none;">
         <div class="row-modal-header">
-            <h2 id="rowModalTitle"></h2>
+            <h2 id="rowModalTitle" contenteditable="true"></h2>
             <button class="row-modal-close" onclick="closeRowModal()">×</button>
         </div>
-        <div class="row-modal-content" id="rowModalContent"></div>
+        <div class="row-modal-content">
+            <div id="rowModalContentEditable" class="row-modal-content-editable" contenteditable="true"></div>
+            <div class="row-modal-char-count"><span id="charCount">0</span>/200</div>
+        </div>
         <div class="row-modal-actions">
             <button onclick="deleteCurrentRow()">Delete</button>
         </div>
@@ -549,10 +592,53 @@
             currentRowColumn = colIndex;
             currentRowIndex = rowIndex;
             const row = data.columns[colIndex].rows[rowIndex];
-            document.getElementById('rowModalTitle').textContent = row.name;
-            document.getElementById('rowModalContent').innerHTML = `<p>${escapeHtml(row.name)}</p>`;
+            const titleEl = document.getElementById('rowModalTitle');
+            const contentEl = document.getElementById('rowModalContentEditable');
+
+            titleEl.textContent = row.name;
+            contentEl.textContent = row.description || '';
+
+            updateCharCount();
+
+            // Clone and replace elements to remove old event listeners
+            const newTitleEl = titleEl.cloneNode(true);
+            titleEl.parentNode.replaceChild(newTitleEl, titleEl);
+
+            const newContentEl = contentEl.cloneNode(true);
+            contentEl.parentNode.replaceChild(newContentEl, contentEl);
+
+            // Add event listeners to new elements
+            newTitleEl.addEventListener('blur', function() {
+                const newName = this.textContent || row.name;
+                data.columns[colIndex].rows[rowIndex].name = newName;
+                updateURL();
+                render();
+            });
+
+            newTitleEl.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.blur();
+                }
+            });
+
+            newContentEl.addEventListener('input', function() {
+                let text = this.textContent;
+                if (text.length > 200) {
+                    this.textContent = text.substring(0, 200);
+                }
+                updateCharCount();
+                data.columns[colIndex].rows[rowIndex].description = this.textContent;
+                updateURL();
+            });
+
             document.getElementById('rowModal').style.display = 'flex';
             document.getElementById('rowModalOverlay').style.display = 'block';
+        }
+
+        function updateCharCount() {
+            const contentEl = document.getElementById('rowModalContentEditable');
+            document.getElementById('charCount').textContent = contentEl.textContent.length;
         }
 
         function closeRowModal() {
@@ -597,6 +683,7 @@
                     const newName = this.textContent || column.name;
                     data.columns[colIndex].name = newName;
                     updateURL();
+                    render();
                 });
                 columnNameEl.addEventListener('keydown', function(e) {
                     if (e.key === 'Enter') {
