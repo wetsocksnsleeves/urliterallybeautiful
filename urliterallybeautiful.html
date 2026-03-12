@@ -33,21 +33,26 @@
             background: white;
             border-bottom: 1px solid #ddd;
             flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 20px;
         }
 
-        h1 {
+        .page-title {
             font-size: 24px;
-            margin: 0;
+            margin: 0 0 10px 0;
             cursor: text;
             padding: 4px 8px;
             border-radius: 4px;
         }
 
-        h1:hover {
+        .page-title:hover {
             background: #f0f0f0;
         }
 
-        h1[contenteditable="true"] {
+        .page-title:focus {
             background: #fff9e6;
             outline: 2px solid #ffc107;
             outline-offset: 2px;
@@ -56,11 +61,31 @@
         .controls {
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 12px;
+            align-items: center;
+        }
+
+        .copy-btn {
+            background: none !important;
+            border: none;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+            align-self: baseline;
+        }
+
+        .copy-btn:hover {
+            background: #f0f0f0 !important;
+            color: #ccc;
         }
 
         .stats-section {
+            padding: 0px 0px 0px 10px;
             font-size: 13px;
             color: #666;
             font-family: 'Monaco', 'Courier New', monospace;
@@ -90,9 +115,10 @@
 
         .columns-container {
             display: flex;
-            gap: 20px;
+            gap: 10px;
             overflow-x: auto;
-            padding: 20px;
+            overflow-y: hidden;
+            padding: 10px;
             flex: 1;
             align-items: flex-start;
         }
@@ -106,7 +132,7 @@
             width: 350px;
             display: flex;
             flex-direction: column;
-            height: calc(100vh - 120px);
+            height: 100%;
         }
 
         .column-header {
@@ -259,13 +285,18 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1 id="pageTitle" contenteditable="true">My Board</h1>
-            <div class="controls">
-                <button class="secondary" onclick="copyURL()">Copy URL</button>
-            </div>
-
-            <div class="stats-section" id="statsSection">
-                Raw: <span id="statRaw">0</span> | Compressed: <span id="statCompressed">0</span> | Encoded: <span id="statEncoded">0</span> | Limit: <span id="statPercent">0%</span>
+            <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <h1 id="pageTitle" class="page-title" contenteditable="true">My Board</h1>
+                    <button class="copy-btn" onclick="copyURL()" title="Copy URL">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-copy" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="stats-section" id="statsSection">
+                    Raw: <span id="statRaw">0</span> | Compressed: <span id="statCompressed">0</span> | Encoded: <span id="statEncoded">0</span> | Limit: <span id="statPercent">0%</span>
+                </div>
             </div>
         </div>
 
