@@ -150,6 +150,22 @@
             color: #333;
         }
 
+        .column-title {
+            cursor: text;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .column-title:hover {
+            background: #f0f0f0;
+        }
+
+        .column-title:focus {
+            background: #fff9e6;
+            outline: 2px solid #ffc107;
+            outline-offset: 2px;
+        }
+
         .column-delete {
             background: #dc3545;
             padding: 6px 12px;
@@ -207,10 +223,48 @@
         }
 
         .add-row-input {
-            display: flex;
+            display: none;
             gap: 8px;
             margin-top: auto;
             flex-shrink: 0;
+        }
+
+        .add-row-input.visible {
+            display: flex;
+        }
+
+        .add-row-btn-toggle {
+            background: transparent !important;
+            color: #999;
+            border: none;
+            width: 100%;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: auto;
+            transition: all 0.2s;
+        }
+
+        .add-row-btn-toggle:hover {
+            background: transparent !important;
+            color: #555;
+        }
+
+        .add-row-btn {
+            background: transparent !important;
+            color: #999;
+            border: none;
+            width: 100%;
+            margin-top: auto;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .add-row-btn:hover {
+            background: transparent !important;
+            color: #555;
         }
 
         .add-column-btn {
@@ -220,6 +274,20 @@
             align-items: center;
             justify-content: center;
             height: calc(100vh - 120px);
+        }
+
+        .add-column-button {
+            background: transparent !important;
+            color: #555;
+            font-size: 16px;
+            padding: 12px 24px !important;
+            transition: all 0.2s;
+        }
+
+        .add-column-button:hover {
+            background: transparent !important;
+            color: #333;
+            transform: scale(1.05);
         }
 
         .add-row-input input {
@@ -311,7 +379,7 @@
 
         <div class="columns-container" id="columnsContainer">
             <div class="add-column-btn">
-                <button onclick="addColumn()" style="font-size: 16px; padding: 12px 24px;">+ Add Column</button>
+                <button class="add-column-button" onclick="addColumn()">+ Add Column</button>
             </div>
         </div>
 
@@ -343,8 +411,10 @@
         }
 
         function deleteColumn(index) {
-            data.columns.splice(index, 1);
-            render();
+            if (confirm(`Delete column "${data.columns[index].name}"?`)) {
+                data.columns.splice(index, 1);
+                render();
+            }
         }
 
         function addRow(columnIndex) {
@@ -361,8 +431,28 @@
             });
 
             input.value = '';
+
+            // Hide input and show toggle button again
+            const inputDiv = document.getElementById(`add-row-input-${columnIndex}`);
+            const toggleBtn = document.getElementById(`toggle-btn-${columnIndex}`);
+            if (inputDiv) {
+                inputDiv.classList.remove('visible');
+            }
+            if (toggleBtn) {
+                toggleBtn.style.display = '';
+            }
+
             render();
         }
+
+        // Handle Enter key in row input
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.matches('input[placeholder="Enter row name"]')) {
+                const inputId = e.target.id;
+                const colIndex = parseInt(inputId.split('-')[1]);
+                addRow(colIndex);
+            }
+        }, true);
 
         function deleteRow(columnIndex, rowIndex) {
             data.columns[columnIndex].rows.splice(rowIndex, 1);
@@ -387,9 +477,23 @@
                 const header = document.createElement('div');
                 header.className = 'column-header';
                 header.innerHTML = `
-                    <div class="column-name">${escapeHtml(column.name)}</div>
+                    <div class="column-name column-title" contenteditable="true" data-col-index="${colIndex}">${escapeHtml(column.name)}</div>
                     <button class="column-delete" onclick="deleteColumn(${colIndex})">Delete</button>
                 `;
+
+                // Add event listeners for column name editing
+                const columnNameEl = header.querySelector('.column-title');
+                columnNameEl.addEventListener('blur', function() {
+                    const newName = this.textContent || column.name;
+                    data.columns[colIndex].name = newName;
+                    updateURL();
+                });
+                columnNameEl.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.blur();
+                    }
+                });
 
                 const rowsDiv = document.createElement('div');
                 rowsDiv.className = 'rows';
@@ -410,13 +514,25 @@
 
                 const inputDiv = document.createElement('div');
                 inputDiv.className = 'add-row-input';
+                inputDiv.id = `add-row-input-${colIndex}`;
                 inputDiv.innerHTML = `
                     <input type="text" id="input-${colIndex}" placeholder="Enter row name" />
                     <button onclick="addRow(${colIndex})">Add</button>
                 `;
 
+                const toggleBtn = document.createElement('button');
+                toggleBtn.className = 'add-row-btn-toggle';
+                toggleBtn.id = `toggle-btn-${colIndex}`;
+                toggleBtn.textContent = '+ Add Item';
+                toggleBtn.onclick = function() {
+                    inputDiv.classList.add('visible');
+                    toggleBtn.style.display = 'none';
+                    document.getElementById(`input-${colIndex}`).focus();
+                };
+
                 columnDiv.appendChild(header);
                 columnDiv.appendChild(rowsDiv);
+                columnDiv.appendChild(toggleBtn);
                 columnDiv.appendChild(inputDiv);
 
                 // Insert before the add-column button
