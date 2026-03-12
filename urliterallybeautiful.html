@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Column Data Manager</title>
+    <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 0;
+        }
+
+        .header {
+            padding: 20px;
+            background: white;
+            border-bottom: 1px solid #ddd;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin: 0;
+            cursor: text;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        h1:hover {
+            background: #f0f0f0;
+        }
+
+        h1[contenteditable="true"] {
+            background: #fff9e6;
+            outline: 2px solid #ffc107;
+            outline-offset: 2px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .stats-section {
+            font-size: 13px;
+            color: #666;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+
+        button {
+            padding: 10px 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        button.secondary {
+            background: #6c757d;
+        }
+
+        button.secondary:hover {
+            background: #545b62;
+        }
+
+        .columns-container {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 20px;
+            flex: 1;
+            align-items: flex-start;
+        }
+
+        .column {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+            width: 350px;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+        }
+
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .column-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .column-delete {
+            background: #dc3545;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .column-delete:hover {
+            background: #c82333;
+        }
+
+        .rows {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .row-block {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .row-name {
+            font-size: 14px;
+            color: #333;
+            flex: 1;
+        }
+
+        .row-delete {
+            background: #dc3545;
+            padding: 4px 8px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
+
+        .row-delete:hover {
+            background: #c82333;
+        }
+
+        .add-row-input {
+            display: flex;
+            gap: 8px;
+            margin-top: auto;
+            flex-shrink: 0;
+        }
+
+        .add-column-btn {
+            flex-shrink: 0;
+            width: 350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: calc(100vh - 120px);
+        }
+
+        .add-row-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .add-row-input button {
+            padding: 8px 12px;
+        }
+
+        .url-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .url-section h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .url-display {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            word-break: break-all;
+            max-height: 100px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+        }
+
+        .url-display.empty {
+            color: #999;
+        }
+
+        .url-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .stats {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            padding: 12px;
+            font-size: 13px;
+            color: #004085;
+            margin-top: 12px;
+        }
+
+        .decode-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 id="pageTitle" contenteditable="true">My Board</h1>
+            <div class="controls">
+                <button class="secondary" onclick="copyURL()">Copy URL</button>
+            </div>
+
+            <div class="stats-section" id="statsSection">
+                Raw: <span id="statRaw">0</span> | Compressed: <span id="statCompressed">0</span> | Encoded: <span id="statEncoded">0</span> | Limit: <span id="statPercent">0%</span>
+            </div>
+        </div>
+
+        <div class="columns-container" id="columnsContainer">
+            <div class="add-column-btn">
+                <button onclick="addColumn()" style="font-size: 16px; padding: 12px 24px;">+ Add Column</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let data = {
+            title: "My Board",
+            columns: [
+                { name: "ready", rows: [] },
+                { name: "in-progress", rows: [] },
+                { name: "in-review", rows: [] },
+                { name: "re-work", rows: [] },
+                { name: "done", rows: [] },
+                { name: "archived", rows: [] }
+            ]
+        };
+
+        function addColumn() {
+            const columnName = prompt('Enter column name:');
+            if (!columnName) return;
+
+            data.columns.push({
+                name: columnName,
+                rows: []
+            });
+
+            render();
+        }
+
+        function deleteColumn(index) {
+            data.columns.splice(index, 1);
+            render();
+        }
+
+        function addRow(columnIndex) {
+            const input = document.getElementById(`input-${columnIndex}`);
+            const rowName = input.value.trim();
+
+            if (!rowName) {
+                alert('Please enter a row name');
+                return;
+            }
+
+            data.columns[columnIndex].rows.push({
+                name: rowName
+            });
+
+            input.value = '';
+            render();
+        }
+
+        function deleteRow(columnIndex, rowIndex) {
+            data.columns[columnIndex].rows.splice(rowIndex, 1);
+            render();
+        }
+
+        function render() {
+            const container = document.getElementById('columnsContainer');
+
+            // Clear only the columns, keep the add button
+            const columns = container.querySelectorAll('.column');
+            columns.forEach(col => col.remove());
+
+            // Update title
+            const pageTitle = document.getElementById('pageTitle');
+            pageTitle.textContent = data.title || 'My Board';
+
+            data.columns.forEach((column, colIndex) => {
+                const columnDiv = document.createElement('div');
+                columnDiv.className = 'column';
+
+                const header = document.createElement('div');
+                header.className = 'column-header';
+                header.innerHTML = `
+                    <div class="column-name">${escapeHtml(column.name)}</div>
+                    <button class="column-delete" onclick="deleteColumn(${colIndex})">Delete</button>
+                `;
+
+                const rowsDiv = document.createElement('div');
+                rowsDiv.className = 'rows';
+
+                column.rows.forEach((row, rowIndex) => {
+                    const rowBlock = document.createElement('div');
+                    rowBlock.className = 'row-block';
+                    rowBlock.innerHTML = `
+                        <div class="row-name">${escapeHtml(row.name)}</div>
+                        <button class="row-delete" onclick="deleteRow(${colIndex}, ${rowIndex})">×</button>
+                    `;
+                    rowsDiv.appendChild(rowBlock);
+                });
+
+                const inputDiv = document.createElement('div');
+                inputDiv.className = 'add-row-input';
+                inputDiv.innerHTML = `
+                    <input type="text" id="input-${colIndex}" placeholder="Enter row name" />
+                    <button onclick="addRow(${colIndex})">Add</button>
+                `;
+
+                columnDiv.appendChild(header);
+                columnDiv.appendChild(rowsDiv);
+                columnDiv.appendChild(inputDiv);
+
+                // Insert before the add-column button
+                const addBtn = container.querySelector('.add-column-btn');
+                container.insertBefore(columnDiv, addBtn);
+            });
+
+            // Auto-generate URL after render
+            updateURL();
+        }
+
+        // Handle title changes
+        document.getElementById('pageTitle').addEventListener('blur', function() {
+            data.title = this.textContent || 'My Board';
+            updateURL();
+        });
+
+        document.getElementById('pageTitle').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.blur();
+            }
+        });
+
+        function updateURL() {
+            const jsonStr = JSON.stringify(data, null, 0);
+            const compressed = pako.gzip(jsonStr);
+            const encoded = btoa(String.fromCharCode(...compressed));
+
+            // URL-safe base64 encoding for query parameters
+            const urlSafeEncoded = encoded
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=/g, '');
+
+            // Update URL bar with proper encoding
+            const newUrl = `${window.location.pathname}?state=${encodeURIComponent(urlSafeEncoded)}`;
+            window.history.replaceState({}, '', newUrl);
+
+            // Update stats
+            const encodedLength = urlSafeEncoded.length;
+            const percentage = Math.round((encodedLength / 2000) * 100 * 10) / 10;
+
+            document.getElementById('statRaw').textContent = jsonStr.length;
+            document.getElementById('statCompressed').textContent = compressed.length;
+            document.getElementById('statEncoded').textContent = encodedLength;
+            document.getElementById('statPercent').textContent = percentage + '%';
+        }
+
+        function copyURL() {
+            navigator.clipboard.writeText(window.location.href);
+            alert('Full URL copied to clipboard!');
+        }
+
+function clearAll() {
+            if (confirm('Are you sure? This will clear all data.')) {
+                data = { columns: [] };
+                render();
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load state from URL if present
+        function loadStateFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            let state = params.get('state');
+
+            if (state) {
+                try {
+                    // Convert URL-safe base64 back to standard base64
+                    state = state.replace(/-/g, '+').replace(/_/g, '/');
+
+                    // Add padding if needed
+                    const padding = 4 - (state.length % 4);
+                    if (padding !== 4) {
+                        state += '='.repeat(padding);
+                    }
+
+                    const compressed = Uint8Array.from(atob(state), c => c.charCodeAt(0));
+                    const jsonStr = pako.ungzip(compressed, { to: 'string' });
+                    const decoded = JSON.parse(jsonStr);
+
+                    if (decoded.columns && Array.isArray(decoded.columns)) {
+                        data = decoded;
+                        if (!data.title) data.title = 'My Board';
+                        console.log('Successfully loaded state from URL');
+                    } else {
+                        throw new Error('Invalid data structure');
+                    }
+                } catch (e) {
+                    console.error('Failed to decode state from URL:', e.message);
+                    alert('Failed to decode URL. The state may be corrupted.');
+                }
+            }
+        }
+
+        // Load from URL and render
+        loadStateFromURL();
+        render();
+    </script>
+</body>
+</html>
