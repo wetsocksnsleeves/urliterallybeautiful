@@ -44,7 +44,6 @@
             font-size: 24px;
             margin: 0 0 10px 0;
             cursor: text;
-            padding: 4px 8px;
             border-radius: 4px;
         }
 
@@ -56,6 +55,7 @@
             background: #fff9e6;
             outline: 2px solid #ffc107;
             outline-offset: 2px;
+            padding: 4px 8px;
         }
 
         .controls {
@@ -112,7 +112,6 @@
             margin: 0;
             font-size: 20px;
             cursor: text;
-            padding: 4px 8px;
             border-radius: 4px;
         }
 
@@ -124,6 +123,7 @@
             background: #fff9e6;
             outline: 2px solid #ffc107;
             outline-offset: 2px;
+            padding: 4px 8px;
         }
 
         .row-modal-content-editable {
@@ -204,20 +204,7 @@
             border-top: 1px solid #ddd;
             display: flex;
             gap: 10px;
-        }
-
-        .row-modal-actions button {
-            padding: 10px 16px;
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .row-modal-actions button:hover {
-            background: #c82333;
+            align-items: center;
         }
 
         .row-modal-overlay {
@@ -231,7 +218,6 @@
         }
 
         .stats-section {
-            padding: 0px 0px 0px 10px;
             font-size: 13px;
             color: #666;
             font-family: 'Monaco', 'Courier New', monospace;
@@ -298,7 +284,6 @@
 
         .column-title {
             cursor: text;
-            padding: 4px 8px;
             border-radius: 4px;
         }
 
@@ -310,16 +295,23 @@
             background: #fff9e6;
             outline: 2px solid #ffc107;
             outline-offset: 2px;
+            padding: 4px 8px;
         }
 
-        .column-delete {
-            background: #dc3545;
-            padding: 6px 12px;
-            font-size: 12px;
+        .delete-btn {
+            background: transparent !important;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            color: #dc3545;
+            font-size: 14px;
+            transition: all 0.2s;
         }
 
-        .column-delete:hover {
-            background: #c82333;
+        .delete-btn:hover,
+        .delete-btn:focus {
+            background: transparent !important;
+            color: #a71d2a;
         }
 
         .rows {
@@ -530,7 +522,7 @@
             <div class="row-modal-char-count" id="charCountContainer" style="display: none;"><span id="charCount">0</span>/200</div>
         </div>
         <div class="row-modal-actions">
-            <button onclick="deleteCurrentRow()">Delete</button>
+            <button class="delete-btn" onclick="deleteCurrentRow()">Delete</button>
         </div>
     </div>
 
@@ -743,7 +735,7 @@
                 header.className = 'column-header';
                 header.innerHTML = `
                     <div class="column-name column-title" contenteditable="true" data-col-index="${colIndex}">${escapeHtml(column.name)}</div>
-                    <button class="column-delete" onclick="deleteColumn(${colIndex})">Delete</button>
+                    <button class="delete-btn" onclick="deleteColumn(${colIndex})">Delete</button>
                 `;
 
                 // Add event listeners for column name editing
