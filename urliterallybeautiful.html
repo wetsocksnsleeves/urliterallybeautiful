@@ -84,6 +84,90 @@
             color: #ccc;
         }
 
+        .row-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 500px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            max-height: 90vh;
+        }
+
+        .row-modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .row-modal-header h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .row-modal-close {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: #666;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .row-modal-close:hover {
+            color: #333;
+        }
+
+        .row-modal-content {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .row-modal-actions {
+            padding: 20px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+        }
+
+        .row-modal-actions button {
+            padding: 10px 16px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .row-modal-actions button:hover {
+            background: #c82333;
+        }
+
+        .row-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.3);
+            z-index: 999;
+        }
+
         .stats-section {
             padding: 0px 0px 0px 10px;
             font-size: 13px;
@@ -200,26 +284,13 @@
             font-size: 14px;
             color: #333;
             flex: 1;
-        }
-
-        .row-delete {
-            background: transparent;
-            color: #999;
-            padding: 4px 8px;
-            font-size: 11px;
-            margin-left: 8px;
-            border: none;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             transition: all 0.2s;
         }
 
-        .row-delete:hover {
-            background: transparent;
-            color: #555;
-            transform: scale(1.2);
+        .row-block:hover .row-name {
+            text-decoration: underline;
+            color: #007bff;
         }
 
         .add-row-input {
@@ -385,6 +456,18 @@
 
     </div>
 
+    <div id="rowModalOverlay" class="row-modal-overlay" style="display: none;" onclick="closeRowModal()"></div>
+    <div id="rowModal" class="row-modal" style="display: none;">
+        <div class="row-modal-header">
+            <h2 id="rowModalTitle"></h2>
+            <button class="row-modal-close" onclick="closeRowModal()">×</button>
+        </div>
+        <div class="row-modal-content" id="rowModalContent"></div>
+        <div class="row-modal-actions">
+            <button onclick="deleteCurrentRow()">Delete</button>
+        </div>
+    </div>
+
     <script>
         let data = {
             title: "My Board",
@@ -459,6 +542,33 @@
             render();
         }
 
+        let currentRowColumn = null;
+        let currentRowIndex = null;
+
+        function openRowModal(colIndex, rowIndex) {
+            currentRowColumn = colIndex;
+            currentRowIndex = rowIndex;
+            const row = data.columns[colIndex].rows[rowIndex];
+            document.getElementById('rowModalTitle').textContent = row.name;
+            document.getElementById('rowModalContent').innerHTML = `<p>${escapeHtml(row.name)}</p>`;
+            document.getElementById('rowModal').style.display = 'flex';
+            document.getElementById('rowModalOverlay').style.display = 'block';
+        }
+
+        function closeRowModal() {
+            document.getElementById('rowModal').style.display = 'none';
+            document.getElementById('rowModalOverlay').style.display = 'none';
+            currentRowColumn = null;
+            currentRowIndex = null;
+        }
+
+        function deleteCurrentRow() {
+            if (currentRowColumn !== null && currentRowIndex !== null) {
+                deleteRow(currentRowColumn, currentRowIndex);
+                closeRowModal();
+            }
+        }
+
         function render() {
             const container = document.getElementById('columnsContainer');
 
@@ -501,14 +611,11 @@
                 column.rows.forEach((row, rowIndex) => {
                     const rowBlock = document.createElement('div');
                     rowBlock.className = 'row-block';
-                    rowBlock.innerHTML = `
-                        <div class="row-name">${escapeHtml(row.name)}</div>
-                        <button class="row-delete" onclick="deleteRow(${colIndex}, ${rowIndex})">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots" viewBox="0 0 16 16">
-                                <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"/>
-                            </svg>
-                        </button>
-                    `;
+                    rowBlock.innerHTML = `<div class="row-name">${escapeHtml(row.name)}</div>`;
+                    rowBlock.style.cursor = 'pointer';
+                    rowBlock.onclick = function() {
+                        openRowModal(colIndex, rowIndex);
+                    };
                     rowsDiv.appendChild(rowBlock);
                 });
 
