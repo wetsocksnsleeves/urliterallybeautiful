@@ -187,14 +187,23 @@
         }
 
         .row-delete {
-            background: #dc3545;
+            background: transparent;
+            color: #999;
             padding: 4px 8px;
             font-size: 11px;
             margin-left: 8px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
         }
 
         .row-delete:hover {
-            background: #c82333;
+            background: transparent;
+            color: #555;
+            transform: scale(1.2);
         }
 
         .add-row-input {
@@ -390,7 +399,11 @@
                     rowBlock.className = 'row-block';
                     rowBlock.innerHTML = `
                         <div class="row-name">${escapeHtml(row.name)}</div>
-                        <button class="row-delete" onclick="deleteRow(${colIndex}, ${rowIndex})">×</button>
+                        <button class="row-delete" onclick="deleteRow(${colIndex}, ${rowIndex})">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots" viewBox="0 0 16 16">
+                                <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"/>
+                            </svg>
+                        </button>
                     `;
                     rowsDiv.appendChild(rowBlock);
                 });
