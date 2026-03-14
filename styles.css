@@ -1,3 +1,76 @@
+:root {
+    /* Light mode colors */
+    --bg-primary: #f5f5f5;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f9f9f9;
+    --bg-hover: #f0f0f0;
+    --bg-focus: #fff9e6;
+
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --text-tertiary: #999999;
+
+    --border-color: #dddddd;
+    --border-light: #e0e0e0;
+
+    --button-primary: #007bff;
+    --button-primary-hover: #0056b3;
+    --button-secondary: #6c757d;
+    --button-secondary-hover: #545b62;
+
+    --accent-primary: #ffc107;
+    --accent-delete: #dc3545;
+    --accent-delete-hover: #a71d2a;
+
+    --link-color: #007bff;
+    --code-bg: #f0f0f0;
+    --quote-color: #666666;
+
+    --shadow-light: rgba(0, 0, 0, 0.1);
+    --shadow-medium: rgba(0, 0, 0, 0.15);
+    --shadow-dark: rgba(0, 0, 0, 0.3);
+
+    --stats-bg: #e7f3ff;
+    --stats-border: #b3d9ff;
+    --stats-text: #004085;
+}
+
+body.dark-mode {
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-tertiary: #1c2128;
+    --bg-hover: #30363d;
+    --bg-focus: #2d333b;
+
+    --text-primary: #c9d1d9;
+    --text-secondary: #8b949e;
+    --text-tertiary: #6e7681;
+
+    --border-color: #30363d;
+    --border-light: #21262d;
+
+    --button-primary: #238636;
+    --button-primary-hover: #2ea043;
+    --button-secondary: #21262d;
+    --button-secondary-hover: #30363d;
+
+    --accent-primary: #d29922;
+    --accent-delete: #f85149;
+    --accent-delete-hover: #da3633;
+
+    --link-color: #58a6ff;
+    --code-bg: #0d1117;
+    --quote-color: #8b949e;
+
+    --shadow-light: rgba(0, 0, 0, 0.3);
+    --shadow-medium: rgba(0, 0, 0, 0.5);
+    --shadow-dark: rgba(0, 0, 0, 0.7);
+
+    --stats-bg: #0d3a2a;
+    --stats-border: #1a6e4a;
+    --stats-text: #56d364;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -6,11 +79,13 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #f5f5f5;
+    background: var(--bg-primary);
+    color: var(--text-primary);
     padding: 0;
     height: 100vh;
     display: flex;
     flex-direction: column;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 .container {
@@ -22,14 +97,15 @@ body {
 
 .header {
     padding: 20px;
-    background: white;
-    border-bottom: 1px solid #ddd;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     flex-wrap: wrap;
     gap: 20px;
+    transition: background-color 0.3s, border-color 0.3s;
 }
 
 .header > div:first-child {
@@ -48,15 +124,17 @@ body {
     margin: 0;
     cursor: text;
     border-radius: 4px;
+    color: var(--text-primary);
+    transition: background-color 0.2s, color 0.2s;
 }
 
 .page-title:hover {
-    background: #f0f0f0;
+    background: var(--bg-hover);
 }
 
 .page-title:focus {
-    background: #fff9e6;
-    outline: 2px solid #ffc107;
+    background: var(--bg-focus);
+    outline: 2px solid var(--accent-primary);
     outline-offset: 2px;
     padding: 4px 8px;
 }
@@ -71,7 +149,7 @@ body {
     background: none !important;
     border: none;
     cursor: pointer;
-    color: #999;
+    color: var(--text-tertiary);
     padding: 0;
     width: 16px;
     height: 16px;
@@ -82,8 +160,27 @@ body {
 }
 
 .copy-btn:hover {
-    background: #f0f0f0 !important;
-    color: #ccc;
+    background: var(--bg-hover) !important;
+    color: var(--text-secondary);
+}
+
+.toggle-btn {
+    background: none !important;
+    border: none;
+    cursor: pointer;
+    color: var(--text-tertiary);
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.toggle-btn:hover {
+    background: none !important;
+    color: var(--text-secondary);
 }
 
 .row-modal {
@@ -93,21 +190,23 @@ body {
     transform: translate(-50%, -50%);
     width: 90%;
     max-width: 500px;
-    background: white;
+    background: var(--bg-secondary);
     border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 16px var(--shadow-medium);
     display: flex;
     flex-direction: column;
     z-index: 1000;
     max-height: 90vh;
+    transition: background-color 0.3s;
 }
 
 .row-modal-header {
     padding: 20px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: border-color 0.3s;
 }
 
 .row-modal-header h2 {
@@ -115,45 +214,50 @@ body {
     font-size: 20px;
     cursor: text;
     border-radius: 4px;
+    color: var(--text-primary);
+    transition: background-color 0.2s, color 0.2s;
 }
 
 .row-modal-header h2:hover {
-    background: #f0f0f0;
+    background: var(--bg-hover);
 }
 
 .row-modal-header h2:focus {
-    background: #fff9e6;
-    outline: 2px solid #ffc107;
+    background: var(--bg-focus);
+    outline: 2px solid var(--accent-primary);
     outline-offset: 2px;
     padding: 4px 8px;
 }
 
 .row-modal-content-editable {
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     padding: 12px;
     outline: none;
     cursor: text;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, background-color 0.2s, color 0.2s;
     flex: 1;
     resize: none;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
 }
 
 .row-modal-content-editable:hover {
-    border-color: #999;
+    border-color: var(--text-tertiary);
 }
 
 .row-modal-content-editable:focus {
-    border-color: #007bff;
-    outline: 2px solid #007bff;
+    border-color: var(--button-primary);
+    outline: 2px solid var(--button-primary);
     outline-offset: -1px;
 }
 
 .row-modal-char-count {
     font-size: 12px;
-    color: #999;
+    color: var(--text-tertiary);
     margin-top: 8px;
     flex-shrink: 0;
+    transition: color 0.2s;
 }
 
 .row-modal-content-display {
@@ -162,10 +266,12 @@ body {
     word-wrap: break-word;
     flex: 1;
     overflow-y: auto;
+    color: var(--text-primary);
+    transition: color 0.2s;
 }
 
 .row-modal-content-display a {
-    color: #007bff;
+    color: var(--link-color);
     text-decoration: none;
 }
 
@@ -185,28 +291,30 @@ body {
 }
 
 .row-modal-content-display code {
-    background: #f0f0f0;
+    background: var(--code-bg);
     padding: 2px 4px;
     border-radius: 3px;
     font-family: monospace;
+    color: var(--text-primary);
 }
 
 .row-modal-content-display pre {
-    background: #f0f0f0;
+    background: var(--code-bg);
     padding: 10px;
     border-radius: 4px;
     overflow-x: auto;
+    color: var(--text-primary);
 }
 
 .row-modal-content-display blockquote {
-    border-left: 3px solid #ddd;
+    border-left: 3px solid var(--border-color);
     margin: 0.5em 0;
     padding-left: 12px;
-    color: #666;
+    color: var(--quote-color);
 }
 
 .row-modal-content-display.empty {
-    color: #999;
+    color: var(--text-tertiary);
     font-style: italic;
 }
 
@@ -215,7 +323,7 @@ body {
     border: none;
     cursor: pointer;
     padding: 0;
-    color: #999;
+    color: var(--text-tertiary);
     font-size: 14px;
     transition: color 0.2s;
     margin-bottom: 8px;
@@ -226,7 +334,7 @@ body {
 .edit-description-btn:hover,
 .edit-description-btn:focus {
     background: transparent !important;
-    color: #555;
+    color: var(--text-secondary);
     outline: none;
 }
 
@@ -235,18 +343,19 @@ body {
     border: none;
     cursor: pointer;
     font-size: 24px;
-    color: #666;
+    color: var(--text-secondary);
     padding: 0;
     width: 32px;
     height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: color 0.2s;
 }
 
 .row-modal-close:hover {
     background: transparent !important;
-    color: #333;
+    color: var(--text-primary);
 }
 
 .row-modal-content {
@@ -259,10 +368,11 @@ body {
 
 .row-modal-actions {
     padding: 20px;
-    border-top: 1px solid #ddd;
+    border-top: 1px solid var(--border-color);
     display: flex;
     gap: 10px;
     align-items: center;
+    transition: border-color 0.3s;
 }
 
 .row-modal-overlay {
@@ -271,36 +381,38 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0,0,0,0.3);
+    background: var(--shadow-dark);
     z-index: 999;
 }
 
 .stats-section {
     font-size: 13px;
-    color: #666;
+    color: var(--text-secondary);
     font-family: 'Monaco', 'Courier New', monospace;
+    transition: color 0.2s;
 }
 
 button {
     padding: 10px 16px;
-    background: #007bff;
+    background: var(--button-primary);
     color: white;
     border: none;
     border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
+    transition: background-color 0.2s;
 }
 
 button:hover {
-    background: #0056b3;
+    background: var(--button-primary-hover);
 }
 
 button.secondary {
-    background: #6c757d;
+    background: var(--button-secondary);
 }
 
 button.secondary:hover {
-    background: #545b62;
+    background: var(--button-secondary-hover);
 }
 
 .columns-container {
@@ -311,18 +423,21 @@ button.secondary:hover {
     padding: 10px;
     flex: 1;
     align-items: flex-start;
+    background: var(--bg-primary);
+    transition: background-color 0.3s;
 }
 
 .column {
-    background: white;
+    background: var(--bg-secondary);
     border-radius: 8px;
     padding: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px var(--shadow-light);
     flex-shrink: 0;
     width: 350px;
     display: flex;
     flex-direction: column;
     height: 100%;
+    transition: background-color 0.3s;
 }
 
 .column-header {
@@ -331,13 +446,15 @@ button.secondary:hover {
     align-items: center;
     margin-bottom: 16px;
     padding-bottom: 12px;
-    border-bottom: 2px solid #e0e0e0;
+    border-bottom: 2px solid var(--border-light);
+    transition: border-color 0.3s;
 }
 
 .column-name {
     font-size: 18px;
     font-weight: 600;
-    color: #333;
+    color: var(--text-primary);
+    transition: color 0.2s;
 }
 
 .column-title {
@@ -346,12 +463,12 @@ button.secondary:hover {
 }
 
 .column-title:hover {
-    background: #f0f0f0;
+    background: var(--bg-hover);
 }
 
 .column-title:focus {
-    background: #fff9e6;
-    outline: 2px solid #ffc107;
+    background: var(--bg-focus);
+    outline: 2px solid var(--accent-primary);
     outline-offset: 2px;
     padding: 4px 8px;
 }
@@ -361,7 +478,7 @@ button.secondary:hover {
     border: none;
     cursor: pointer;
     padding: 0;
-    color: #dc3545;
+    color: var(--accent-delete);
     font-size: 14px;
     transition: all 0.2s;
 }
@@ -369,7 +486,7 @@ button.secondary:hover {
 .delete-btn:hover,
 .delete-btn:focus {
     background: transparent !important;
-    color: #a71d2a;
+    color: var(--accent-delete-hover);
 }
 
 .rows {
@@ -383,14 +500,14 @@ button.secondary:hover {
 }
 
 .row-block {
-    background: #f9f9f9;
-    border: 1px solid #ddd;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     padding: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s, background-color 0.2s;
 }
 
 .row-block[draggable="true"] {
@@ -403,7 +520,7 @@ button.secondary:hover {
 
 .row-name {
     font-size: 14px;
-    color: #333;
+    color: var(--text-primary);
     flex: 1;
     cursor: pointer;
     transition: all 0.2s;
@@ -411,7 +528,7 @@ button.secondary:hover {
 
 .row-block:hover .row-name {
     text-decoration: underline;
-    color: #007bff;
+    color: var(--link-color);
 }
 
 .add-row-input {
@@ -427,7 +544,7 @@ button.secondary:hover {
 
 .add-row-btn-toggle {
     background: transparent !important;
-    color: #999;
+    color: var(--text-tertiary);
     border: none;
     width: 100%;
     padding: 10px;
@@ -439,12 +556,12 @@ button.secondary:hover {
 
 .add-row-btn-toggle:hover {
     background: transparent !important;
-    color: #555;
+    color: var(--text-secondary);
 }
 
 .add-row-btn {
     background: transparent !important;
-    color: #999;
+    color: var(--text-tertiary);
     border: none;
     width: 100%;
     margin-top: auto;
@@ -456,7 +573,7 @@ button.secondary:hover {
 
 .add-row-btn:hover {
     background: transparent !important;
-    color: #555;
+    color: var(--text-secondary);
 }
 
 .add-column-btn {
@@ -470,7 +587,7 @@ button.secondary:hover {
 
 .add-column-button {
     background: transparent !important;
-    color: #555;
+    color: var(--text-secondary);
     font-size: 16px;
     padding: 12px 24px !important;
     transition: all 0.2s;
@@ -478,16 +595,19 @@ button.secondary:hover {
 
 .add-column-button:hover {
     background: transparent !important;
-    color: #333;
+    color: var(--text-primary);
     transform: scale(1.05);
 }
 
 .add-row-input input {
     flex: 1;
     padding: 8px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 14px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
 }
 
 .add-row-input button {
@@ -495,21 +615,23 @@ button.secondary:hover {
 }
 
 .url-section {
-    background: white;
+    background: var(--bg-secondary);
     border-radius: 8px;
     padding: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px var(--shadow-light);
     margin-bottom: 20px;
+    transition: background-color 0.3s;
 }
 
 .url-section h2 {
     font-size: 18px;
     margin-bottom: 12px;
+    color: var(--text-primary);
 }
 
 .url-display {
-    background: #f5f5f5;
-    border: 1px solid #ddd;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     padding: 12px;
     font-family: 'Monaco', 'Courier New', monospace;
@@ -518,10 +640,12 @@ button.secondary:hover {
     max-height: 100px;
     overflow-y: auto;
     margin-bottom: 12px;
+    color: var(--text-primary);
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
 }
 
 .url-display.empty {
-    color: #999;
+    color: var(--text-tertiary);
 }
 
 .url-actions {
@@ -531,21 +655,25 @@ button.secondary:hover {
 }
 
 .stats {
-    background: #e7f3ff;
-    border: 1px solid #b3d9ff;
+    background: var(--stats-bg);
+    border: 1px solid var(--stats-border);
     border-radius: 4px;
     padding: 12px;
     font-size: 13px;
-    color: #004085;
+    color: var(--stats-text);
     margin-top: 12px;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
 }
 
 .decode-input {
     width: 100%;
     padding: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     font-family: 'Monaco', 'Courier New', monospace;
     font-size: 12px;
     margin-bottom: 10px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
 }

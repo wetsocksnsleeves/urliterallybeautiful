@@ -403,6 +403,24 @@ function copyURL() {
     alert('Full URL copied to clipboard!');
 }
 
+function toggleButtonState() {
+    const toggleOffIcon = document.getElementById('toggleOffIcon');
+    const toggleOnIcon = document.getElementById('toggleOnIcon');
+    const body = document.body;
+
+    if (toggleOffIcon.style.display === 'none') {
+        toggleOffIcon.style.display = 'block';
+        toggleOnIcon.style.display = 'none';
+        body.classList.remove('dark-mode');
+    } else {
+        toggleOffIcon.style.display = 'none';
+        toggleOnIcon.style.display = 'block';
+        body.classList.add('dark-mode');
+    }
+}
+
+document.getElementById('toggleBtn').addEventListener('click', toggleButtonState);
+
 function clearAll() {
     if (confirm('Are you sure? This will clear all data.')) {
         data = { columns: [] };
