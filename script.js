@@ -421,6 +421,17 @@ function toggleButtonState() {
 
 document.getElementById('toggleBtn').addEventListener('click', toggleButtonState);
 
+// Close add-row input when clicking outside
+document.addEventListener('click', function(e) {
+    const addRowInputs = document.querySelectorAll('.add-row-input.visible');
+    addRowInputs.forEach(input => {
+        if (!input.contains(e.target) && !input.previousElementSibling.contains(e.target)) {
+            input.classList.remove('visible');
+            input.parentElement.querySelector('.add-row-btn-toggle').style.display = '';
+        }
+    });
+});
+
 function clearAll() {
     if (confirm('Are you sure? This will clear all data.')) {
         data = { columns: [] };
