@@ -65,6 +65,17 @@
                 <button class="settings-save-btn" onclick="saveGitHubToken()">Save Token</button>
                 <div id="tokenStatus" style="margin-top: 8px; font-size: 12px;"></div>
             </div>
+
+            <div class="settings-section">
+                <label>Board Data</label>
+                <p class="settings-help">Export your board as JSON or import from a previously exported file.</p>
+                <div style="display: flex; gap: 8px;">
+                    <button class="settings-save-btn" onclick="exportBoardAsJSON()">Export as JSON</button>
+                    <button class="settings-save-btn" onclick="document.getElementById('jsonImportInput').click()">Import from JSON</button>
+                </div>
+                <input type="file" id="jsonImportInput" accept=".json" style="display: none;" onchange="importBoardFromJSON(event)">
+                <div id="importStatus" style="margin-top: 8px; font-size: 12px;"></div>
+            </div>
         </div>
     </div>
 

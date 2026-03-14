@@ -309,6 +309,59 @@ function saveGitHubToken() {
     statusEl.style.color = '#28a745';
 }
 
+function exportBoardAsJSON() {
+    const jsonStr = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `board-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+function importBoardFromJSON(event) {
+    const file = event.target.files[0];
+    const statusEl = document.getElementById('importStatus');
+
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const imported = JSON.parse(e.target.result);
+
+            if (!imported.columns || !Array.isArray(imported.columns)) {
+                throw new Error('Invalid board structure');
+            }
+
+            data = imported;
+            if (!data.title) data.title = 'My Board';
+
+            updateURL();
+            render();
+
+            statusEl.textContent = '✓ Board imported successfully';
+            statusEl.style.color = '#28a745';
+
+            // Clear the input so the same file can be imported again
+            event.target.value = '';
+
+            // Close settings modal after a brief delay
+            setTimeout(() => {
+                closeSettingsModal();
+            }, 1000);
+        } catch (error) {
+            statusEl.textContent = `✗ Import failed: ${error.message}`;
+            statusEl.style.color = '#dc3545';
+            event.target.value = '';
+        }
+    };
+    reader.readAsText(file);
+}
+
 function deleteCurrentRow() {
     if (currentRowColumn !== null && currentRowIndex !== null) {
         deleteRow(currentRowColumn, currentRowIndex);
