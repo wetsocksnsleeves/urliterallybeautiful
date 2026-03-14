@@ -727,10 +727,11 @@ function updateURL() {
     // Update stats
     const encodedLength = urlSafeEncoded.length;
     const percentage = Math.round((encodedLength / 2000) * 100 * 10) / 10;
+    const totalItems = data.columns.reduce((sum, col) => sum + col.rows.length, 0);
 
+    document.getElementById('statItems').textContent = totalItems;
     document.getElementById('statRaw').textContent = jsonStr.length;
     document.getElementById('statCompressed').textContent = compressed.length;
-    document.getElementById('statEncoded').textContent = encodedLength;
     document.getElementById('statPercent').textContent = percentage + '%';
 }
 
