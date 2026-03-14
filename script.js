@@ -675,8 +675,39 @@ function getCookie(name) {
     return null;
 }
 
+// Minify data structure for URL compression
+function minifyData(obj) {
+    return {
+        t: obj.title,
+        c: obj.columns.map(col => [
+            col.name,
+            col.rows.map(row => [
+                row.name,
+                row.description || undefined,
+                row.prLink || undefined
+            ].filter(v => v !== undefined))
+        ])
+    };
+}
+
+// Expand minified data back to full structure
+function expandData(obj) {
+    return {
+        title: obj.t,
+        columns: obj.c.map(([colName, rows]) => ({
+            name: colName,
+            rows: (rows || []).map(row => ({
+                name: row[0],
+                description: row[1] || undefined,
+                prLink: row[2] || undefined
+            }))
+        }))
+    };
+}
+
 function updateURL() {
-    const jsonStr = JSON.stringify(data, null, 0);
+    const minified = minifyData(data);
+    const jsonStr = JSON.stringify(minified);
     const compressed = pako.gzip(jsonStr);
     const encoded = btoa(String.fromCharCode(...compressed));
 
@@ -800,15 +831,21 @@ function loadStateFromURL() {
 
             const compressed = Uint8Array.from(atob(state), c => c.charCodeAt(0));
             const jsonStr = pako.ungzip(compressed, { to: 'string' });
-            const decoded = JSON.parse(jsonStr);
+            const minified = JSON.parse(jsonStr);
 
-            if (decoded.columns && Array.isArray(decoded.columns)) {
-                data = decoded;
-                if (!data.title) data.title = 'My Board';
-                console.log('Successfully loaded state from URL or cookie');
+            // Check if it's minified format (has 't' and 'c') or old format (has 'title' and 'columns')
+            if (minified.t !== undefined && minified.c !== undefined) {
+                // New minified format
+                data = expandData(minified);
+            } else if (minified.title !== undefined && minified.columns !== undefined) {
+                // Old format - direct load
+                data = minified;
             } else {
                 throw new Error('Invalid data structure');
             }
+
+            if (!data.title) data.title = 'My Board';
+            console.log('Successfully loaded state from URL or cookie');
         } catch (e) {
             console.error('Failed to decode state:', e.message);
             alert('Failed to decode state. The data may be corrupted.');
