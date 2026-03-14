@@ -1,4 +1,4 @@
-# URL Literally Beautiful - Column Data Manager
+# URL Literally Beautiful - Kanban
 
 A lightweight, shareable Kanban-style board manager that encodes your entire board state directly into the URL. No backend needed—all data lives in the browser and is compressed into your link.
 
