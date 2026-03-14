@@ -11,6 +11,7 @@ let data = {
 };
 
 let draggedItem = null;
+let draggedColumn = null;
 
 function addColumn() {
     const columnName = prompt('Enter column name:');
@@ -375,6 +376,67 @@ function handleDrop(e, targetColIndex) {
     render();
 }
 
+function handleColumnDragStart(e) {
+    draggedColumn = {
+        index: parseInt(e.target.dataset.colIndex)
+    };
+    e.target.closest('.column').style.opacity = '0.5';
+    e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleColumnDragEnd(e) {
+    e.target.closest('.column').style.opacity = '1';
+    draggedColumn = null;
+    document.querySelectorAll('.column').forEach(col => {
+        col.style.opacity = '1';
+    });
+}
+
+function handleColumnDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+}
+
+function handleColumnDragEnter(e) {
+    if (draggedColumn) {
+        const column = e.target.closest('.column');
+        if (column) {
+            column.style.opacity = '0.5';
+        }
+    }
+}
+
+function handleColumnDragLeave(e) {
+    const column = e.target.closest('.column');
+    if (column && !column.contains(e.relatedTarget)) {
+        column.style.opacity = '1';
+    }
+}
+
+function handleColumnDrop(e) {
+    e.preventDefault();
+
+    if (!draggedColumn) return;
+
+    const targetHeader = e.target.closest('.column-header');
+    if (!targetHeader) return;
+
+    const targetColIndex = parseInt(targetHeader.dataset.colIndex);
+    const sourceColIndex = draggedColumn.index;
+
+    if (sourceColIndex === targetColIndex) {
+        return; // Same position, no change
+    }
+
+    // Reorder columns in the data array
+    const [movedColumn] = data.columns.splice(sourceColIndex, 1);
+    data.columns.splice(targetColIndex, 0, movedColumn);
+
+    // Update URL and re-render
+    updateURL();
+    render();
+}
+
 function render() {
     const container = document.getElementById('columnsContainer');
 
@@ -390,9 +452,12 @@ function render() {
     data.columns.forEach((column, colIndex) => {
         const columnDiv = document.createElement('div');
         columnDiv.className = 'column';
+        columnDiv.dataset.colIndex = colIndex;
 
         const header = document.createElement('div');
         header.className = 'column-header';
+        header.draggable = true;
+        header.dataset.colIndex = colIndex;
         header.innerHTML = `
             <div class="column-header-left">
                 <div class="column-name column-title" contenteditable="true" data-col-index="${colIndex}">${escapeHtml(column.name)}</div>
@@ -490,6 +555,14 @@ function render() {
         columnDiv.appendChild(rowsDiv);
         columnDiv.appendChild(toggleBtn);
         columnDiv.appendChild(inputDiv);
+
+        // Add column drag event listeners to header
+        header.addEventListener('dragstart', handleColumnDragStart);
+        header.addEventListener('dragend', handleColumnDragEnd);
+        columnDiv.addEventListener('dragover', handleColumnDragOver);
+        columnDiv.addEventListener('dragenter', handleColumnDragEnter);
+        columnDiv.addEventListener('dragleave', handleColumnDragLeave);
+        columnDiv.addEventListener('drop', handleColumnDrop);
 
         // Insert before the add-column button
         const addBtn = container.querySelector('.add-column-btn');

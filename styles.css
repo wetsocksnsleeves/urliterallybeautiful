@@ -497,7 +497,7 @@ button.secondary:hover {
     display: flex;
     flex-direction: column;
     height: 100%;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, opacity 0.2s;
 }
 
 .column-header {
@@ -509,6 +509,11 @@ button.secondary:hover {
     border-bottom: 2px solid var(--border-light);
     transition: border-color 0.3s;
     gap: 8px;
+    cursor: grab;
+}
+
+.column-header[draggable="true"]:active {
+    cursor: grabbing;
 }
 
 .column-header-left {
