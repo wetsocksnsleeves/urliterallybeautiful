@@ -76,6 +76,75 @@ function deleteRow(columnIndex, rowIndex) {
 let currentRowColumn = null;
 let currentRowIndex = null;
 
+function parsePRLink(link) {
+    const match = link.match(/github\.com\/([^/]+)\/([^/]+)\/pull\/(\d+)/);
+    if (match) {
+        return { owner: match[1], repo: match[2], number: match[3] };
+    }
+    return null;
+}
+
+async function fetchPRStatus(owner, repo, number) {
+    try {
+        const token = getCookie('githubToken');
+        const headers = {};
+        if (token) {
+            headers['Authorization'] = `token ${token}`;
+        }
+
+        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/pulls/${number}`, {
+            headers: headers
+        });
+        if (!response.ok) throw new Error('PR not found');
+        const pr = await response.json();
+        return pr;
+    } catch (e) {
+        console.error('Failed to fetch PR:', e.message);
+        return null;
+    }
+}
+
+function getPRStatusIcon(pr) {
+    if (!pr) return { icon: '❌', text: 'Invalid PR', color: '#dc3545' };
+    if (pr.merged) return { icon: '✅', text: 'Merged', color: '#6f42c1' };
+    if (pr.state === 'closed') return { icon: '🔴', text: 'Closed', color: '#dc3545' };
+    if (pr.draft) return { icon: '📝', text: 'Draft', color: '#6e7681' };
+    return { icon: '🟢', text: 'Open', color: '#28a745' };
+}
+
+function getPRStatusIconForCard(pr) {
+    if (!pr) return null;
+    if (pr.merged) return { icon: '✅', text: 'Merged', color: '#6f42c1' };
+    if (pr.state === 'closed') return { icon: '🔴', text: 'Closed', color: '#dc3545' };
+    if (pr.draft) return { icon: '📝', text: 'Draft', color: '#6e7681' };
+    return { icon: '🟢', text: 'Open', color: '#28a745' };
+}
+
+async function updatePRStatus(prLink) {
+    const statusEl = document.getElementById('prStatus');
+
+    if (!prLink.trim()) {
+        statusEl.style.display = 'none';
+        return;
+    }
+
+    const prInfo = parsePRLink(prLink);
+    if (!prInfo) {
+        statusEl.innerHTML = '<span style="color: #dc3545;">Invalid PR link format</span>';
+        statusEl.style.display = 'flex';
+        return;
+    }
+
+    statusEl.innerHTML = '<span>Loading...</span>';
+    statusEl.style.display = 'flex';
+
+    const pr = await fetchPRStatus(prInfo.owner, prInfo.repo, prInfo.number);
+    const status = getPRStatusIcon(pr);
+
+    statusEl.innerHTML = `<span style="font-size: 16px;">${status.icon}</span><span>${status.text}</span>`;
+    statusEl.style.display = 'flex';
+}
+
 function openRowModal(colIndex, rowIndex) {
     currentRowColumn = colIndex;
     currentRowIndex = rowIndex;
@@ -84,9 +153,12 @@ function openRowModal(colIndex, rowIndex) {
     const contentEl = document.getElementById('rowModalContentEditable');
     const displayEl = document.getElementById('rowModalContentDisplay');
     const charCountContainer = document.getElementById('charCountContainer');
+    const prLinkEl = document.getElementById('rowModalPRLink');
+    const prStatusEl = document.getElementById('prStatus');
 
     titleEl.textContent = row.name;
     contentEl.value = row.description || '';
+    prLinkEl.value = row.prLink || '';
 
     // Display the markdown or empty state
     if (row.description) {
@@ -177,6 +249,19 @@ function openRowModal(colIndex, rowIndex) {
         }
     });
 
+    // PR Link input handler
+    const newPRLinkEl = document.getElementById('rowModalPRLink');
+    newPRLinkEl.addEventListener('input', function() {
+        data.columns[colIndex].rows[rowIndex].prLink = this.value;
+        updateURL();
+        updatePRStatus(this.value);
+    });
+
+    // Load PR status if link exists
+    if (row.prLink) {
+        updatePRStatus(row.prLink);
+    }
+
     document.getElementById('rowModal').style.display = 'flex';
     document.getElementById('rowModalOverlay').style.display = 'block';
 }
@@ -191,6 +276,36 @@ function closeRowModal() {
     document.getElementById('rowModalOverlay').style.display = 'none';
     currentRowColumn = null;
     currentRowIndex = null;
+}
+
+function openSettingsModal() {
+    const githubTokenEl = document.getElementById('githubToken');
+    const token = getCookie('githubToken');
+    githubTokenEl.value = token || '';
+
+    document.getElementById('settingsModal').style.display = 'flex';
+    document.getElementById('settingsModalOverlay').style.display = 'block';
+}
+
+function closeSettingsModal() {
+    document.getElementById('settingsModal').style.display = 'none';
+    document.getElementById('settingsModalOverlay').style.display = 'none';
+}
+
+function saveGitHubToken() {
+    const token = document.getElementById('githubToken').value.trim();
+    const statusEl = document.getElementById('tokenStatus');
+
+    if (!token) {
+        setCookie('githubToken', '');
+        statusEl.textContent = 'Token cleared';
+        statusEl.style.color = 'var(--text-secondary)';
+        return;
+    }
+
+    setCookie('githubToken', token);
+    statusEl.textContent = '✓ Token saved (supports private repos)';
+    statusEl.style.color = '#28a745';
 }
 
 function deleteCurrentRow() {
@@ -279,7 +394,10 @@ function render() {
         const header = document.createElement('div');
         header.className = 'column-header';
         header.innerHTML = `
-            <div class="column-name column-title" contenteditable="true" data-col-index="${colIndex}">${escapeHtml(column.name)}</div>
+            <div class="column-header-left">
+                <div class="column-name column-title" contenteditable="true" data-col-index="${colIndex}">${escapeHtml(column.name)}</div>
+                <span class="column-counter">${column.rows.length}</span>
+            </div>
             <button class="delete-btn" onclick="deleteColumn(${colIndex})">Delete</button>
         `;
 
@@ -307,7 +425,13 @@ function render() {
             rowBlock.draggable = true;
             rowBlock.dataset.colIndex = colIndex;
             rowBlock.dataset.rowIndex = rowIndex;
-            rowBlock.innerHTML = `<div class="row-name">${escapeHtml(row.name)}</div>`;
+
+            let prIconHTML = '';
+            if (row.prLink) {
+                prIconHTML = `<span class="row-pr-icon" title="${escapeHtml(row.prLink)}">...</span>`;
+            }
+
+            rowBlock.innerHTML = `<div class="row-name">${escapeHtml(row.name)}</div>${prIconHTML}`;
             rowBlock.style.cursor = 'pointer';
             rowBlock.onclick = function(e) {
                 if (e.button !== 0) return; // Only left click
@@ -317,6 +441,23 @@ function render() {
             // Drag event listeners
             rowBlock.addEventListener('dragstart', handleDragStart);
             rowBlock.addEventListener('dragend', handleDragEnd);
+
+            // Load PR status icon if link exists
+            if (row.prLink) {
+                const prIcon = rowBlock.querySelector('.row-pr-icon');
+                const prInfo = parsePRLink(row.prLink);
+                if (prInfo) {
+                    fetchPRStatus(prInfo.owner, prInfo.repo, prInfo.number).then(pr => {
+                        const status = getPRStatusIconForCard(pr);
+                        if (status) {
+                            prIcon.textContent = status.icon;
+                            prIcon.title = `${status.text}: ${row.prLink}`;
+                        } else {
+                            prIcon.remove();
+                        }
+                    });
+                }
+            }
 
             rowsDiv.appendChild(rowBlock);
         });
@@ -373,6 +514,25 @@ document.getElementById('pageTitle').addEventListener('keydown', function(e) {
     }
 });
 
+function setCookie(name, value, days = 365) {
+    const date = new Date();
+    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    const expires = "expires=" + date.toUTCString();
+    document.cookie = name + "=" + encodeURIComponent(value) + ";" + expires + ";path=/;SameSite=Lax";
+}
+
+function getCookie(name) {
+    const nameEQ = name + "=";
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.indexOf(nameEQ) === 0) {
+            return decodeURIComponent(cookie.substring(nameEQ.length));
+        }
+    }
+    return null;
+}
+
 function updateURL() {
     const jsonStr = JSON.stringify(data, null, 0);
     const compressed = pako.gzip(jsonStr);
@@ -387,6 +547,9 @@ function updateURL() {
     // Update URL bar with proper encoding
     const newUrl = `${window.location.pathname}?state=${encodeURIComponent(urlSafeEncoded)}`;
     window.history.replaceState({}, '', newUrl);
+
+    // Save to cookie
+    setCookie('boardState', urlSafeEncoded);
 
     // Update stats
     const encodedLength = urlSafeEncoded.length;
@@ -412,14 +575,17 @@ function toggleButtonState() {
         toggleOffIcon.style.display = 'block';
         toggleOnIcon.style.display = 'none';
         body.classList.remove('dark-mode');
+        setCookie('theme', 'light');
     } else {
         toggleOffIcon.style.display = 'none';
         toggleOnIcon.style.display = 'block';
         body.classList.add('dark-mode');
+        setCookie('theme', 'dark');
     }
 }
 
 document.getElementById('toggleBtn').addEventListener('click', toggleButtonState);
+document.getElementById('settingsBtn').addEventListener('click', openSettingsModal);
 
 // Close add-row input when clicking outside
 document.addEventListener('click', function(e) {
@@ -469,10 +635,15 @@ function getContenteditableText(element) {
     return text.trim();
 }
 
-// Load state from URL if present
+// Load state from URL or cookie
 function loadStateFromURL() {
     const params = new URLSearchParams(window.location.search);
     let state = params.get('state');
+
+    // If no state in URL, check cookie
+    if (!state) {
+        state = getCookie('boardState');
+    }
 
     if (state) {
         try {
@@ -492,17 +663,35 @@ function loadStateFromURL() {
             if (decoded.columns && Array.isArray(decoded.columns)) {
                 data = decoded;
                 if (!data.title) data.title = 'My Board';
-                console.log('Successfully loaded state from URL');
+                console.log('Successfully loaded state from URL or cookie');
             } else {
                 throw new Error('Invalid data structure');
             }
         } catch (e) {
-            console.error('Failed to decode state from URL:', e.message);
-            alert('Failed to decode URL. The state may be corrupted.');
+            console.error('Failed to decode state:', e.message);
+            alert('Failed to decode state. The data may be corrupted.');
         }
     }
 }
 
+// Load theme preference from cookie
+function loadTheme() {
+    const theme = getCookie('theme');
+    const toggleOffIcon = document.getElementById('toggleOffIcon');
+    const toggleOnIcon = document.getElementById('toggleOnIcon');
+
+    if (theme === 'dark') {
+        document.body.classList.add('dark-mode');
+        toggleOffIcon.style.display = 'none';
+        toggleOnIcon.style.display = 'block';
+    } else {
+        document.body.classList.remove('dark-mode');
+        toggleOffIcon.style.display = 'block';
+        toggleOnIcon.style.display = 'none';
+    }
+}
+
 // Load from URL and render
+loadTheme();
 loadStateFromURL();
 render();

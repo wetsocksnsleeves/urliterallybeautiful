@@ -164,7 +164,8 @@ body {
     color: var(--text-secondary);
 }
 
-.toggle-btn {
+.toggle-btn,
+.settings-btn {
     background: none !important;
     border: none;
     cursor: pointer;
@@ -178,9 +179,63 @@ body {
     transition: color 0.2s;
 }
 
-.toggle-btn:hover {
+.toggle-btn:hover,
+.settings-btn:hover {
     background: none !important;
     color: var(--text-secondary);
+}
+
+.settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.settings-section label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.settings-help {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.settings-help a {
+    color: var(--text-primary);
+    text-decoration: underline;
+}
+
+.settings-help code {
+    background: var(--bg-tertiary);
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 11px;
+}
+
+.settings-input {
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 12px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-family: 'Monaco', 'Courier New', monospace;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.settings-input:focus {
+    outline: none;
+    border-color: var(--button-primary);
+}
+
+.settings-save-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+    align-self: flex-start;
 }
 
 .row-modal {
@@ -271,12 +326,17 @@ body {
 }
 
 .row-modal-content-display a {
-    color: var(--link-color);
-    text-decoration: none;
+    color: var(--text-primary);
+    text-decoration: underline;
 }
 
-.row-modal-content-display a:hover {
-    text-decoration: underline;
+.row-modal-content-display a:visited {
+    color: var(--text-primary);
+}
+
+.row-modal-content-display a:hover,
+.row-modal-content-display a:active {
+    opacity: 0.7;
 }
 
 .row-modal-content-display p {
@@ -448,6 +508,14 @@ button.secondary:hover {
     padding-bottom: 12px;
     border-bottom: 2px solid var(--border-light);
     transition: border-color 0.3s;
+    gap: 8px;
+}
+
+.column-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
 }
 
 .column-name {
@@ -455,6 +523,16 @@ button.secondary:hover {
     font-weight: 600;
     color: var(--text-primary);
     transition: color 0.2s;
+}
+
+.column-counter {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    background: var(--bg-hover);
+    padding: 4px 8px;
+    border-radius: 12px;
+    transition: background-color 0.2s, color 0.2s;
 }
 
 .column-title {
@@ -529,6 +607,13 @@ button.secondary:hover {
 .row-block:hover .row-name {
     text-decoration: underline;
     color: var(--link-color);
+}
+
+.row-pr-icon {
+    font-size: 16px;
+    margin-left: 8px;
+    flex-shrink: 0;
+    cursor: pointer;
 }
 
 .add-row-input {
@@ -676,4 +761,48 @@ button.secondary:hover {
     background: var(--bg-secondary);
     color: var(--text-primary);
     transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.row-modal-pr-section {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+    transition: border-color 0.2s;
+}
+
+.row-modal-pr-section label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.row-modal-pr-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 12px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-family: 'Monaco', 'Courier New', monospace;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.row-modal-pr-input:focus {
+    outline: none;
+    border-color: var(--button-primary);
+}
+
+.pr-status {
+    margin-top: 8px;
+    padding: 8px;
+    border-radius: 4px;
+    background: var(--bg-tertiary);
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.2s;
 }
