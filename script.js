@@ -88,12 +88,14 @@ function openRowModal(colIndex, rowIndex) {
     titleEl.textContent = row.name;
     contentEl.textContent = row.description || '';
 
-    // Display the link or empty state
+    // Display the markdown or empty state
     if (row.description) {
-        displayEl.innerHTML = `<a href="${escapeHtml(row.description)}" target="_blank">${escapeHtml(row.description)}</a>`;
+        const rendered = marked.parse(row.description);
+        const sanitized = DOMPurify.sanitize(rendered);
+        displayEl.innerHTML = sanitized;
         displayEl.classList.remove('empty');
     } else {
-        displayEl.textContent = 'Click to add a link';
+        displayEl.textContent = 'Description...';
         displayEl.classList.add('empty');
     }
 
@@ -126,27 +128,33 @@ function openRowModal(colIndex, rowIndex) {
         }
     });
 
-    newDisplayEl.addEventListener('click', function() {
+    // Get existing Edit button
+    const editBtn = document.getElementById('editDescriptionBtn');
+    editBtn.onclick = function() {
         newDisplayEl.style.display = 'none';
+        editBtn.style.display = 'none';
         newContentEl.style.display = 'block';
         charCountContainer.style.display = 'block';
         newContentEl.focus();
-    });
+    };
 
     newContentEl.addEventListener('blur', function() {
-        const url = this.textContent.trim();
-        data.columns[colIndex].rows[rowIndex].description = url;
+        const markdown = this.textContent.trim();
+        data.columns[colIndex].rows[rowIndex].description = markdown;
         updateURL();
 
         // Update display
-        if (url) {
-            newDisplayEl.innerHTML = `<a href="${escapeHtml(url)}" target="_blank">${escapeHtml(url)}</a>`;
+        if (markdown) {
+            const rendered = marked.parse(markdown);
+            const sanitized = DOMPurify.sanitize(rendered);
+            newDisplayEl.innerHTML = sanitized;
             newDisplayEl.classList.remove('empty');
         } else {
-            newDisplayEl.textContent = 'Click to add a link';
+            newDisplayEl.textContent = 'Description...';
             newDisplayEl.classList.add('empty');
         }
         newDisplayEl.style.display = 'flex';
+        editBtn.style.display = 'block';
         newContentEl.style.display = 'none';
         charCountContainer.style.display = 'none';
     });
@@ -161,8 +169,11 @@ function openRowModal(colIndex, rowIndex) {
 
     newContentEl.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
-            e.preventDefault();
-            this.blur();
+            if (!e.shiftKey) {
+                e.preventDefault();
+                this.blur();
+            }
+            // If Shift is held, allow the newline (default behavior)
         }
     });
 
@@ -299,7 +310,7 @@ function render() {
             rowBlock.innerHTML = `<div class="row-name">${escapeHtml(row.name)}</div>`;
             rowBlock.style.cursor = 'pointer';
             rowBlock.onclick = function(e) {
-                if (e.button !== 0 || e.target !== this) return; // Only left click on the block itself
+                if (e.button !== 0) return; // Only left click
                 openRowModal(colIndex, rowIndex);
             };
 
