@@ -13,6 +13,16 @@ let data = {
 let draggedItem = null;
 let draggedColumn = null;
 
+// Configure marked to support task lists
+marked.setOptions({
+    breaks: true,
+});
+
+// Use marked's built-in task list support if available
+if (marked.defaults) {
+    marked.defaults.breaks = true;
+}
+
 function addColumn() {
     const columnName = prompt('Enter column name:');
     if (!columnName) return;
@@ -164,7 +174,10 @@ function openRowModal(colIndex, rowIndex) {
     // Display the markdown or empty state
     if (row.description) {
         const rendered = marked.parse(row.description);
-        const sanitized = DOMPurify.sanitize(rendered);
+        const sanitized = DOMPurify.sanitize(rendered, {
+            ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 's', 'code', 'pre', 'blockquote', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'a', 'input'],
+            ALLOWED_ATTR: ['href', 'type', 'checked', 'disabled']
+        });
         displayEl.innerHTML = sanitized;
         displayEl.classList.remove('empty');
     } else {
@@ -219,7 +232,10 @@ function openRowModal(colIndex, rowIndex) {
         // Update display
         if (markdown) {
             const rendered = marked.parse(markdown);
-            const sanitized = DOMPurify.sanitize(rendered);
+            const sanitized = DOMPurify.sanitize(rendered, {
+                ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 's', 'code', 'pre', 'blockquote', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'a', 'input'],
+                ALLOWED_ATTR: ['href', 'type', 'checked', 'disabled']
+            });
             newDisplayEl.innerHTML = sanitized;
             newDisplayEl.classList.remove('empty');
         } else {

@@ -295,6 +295,7 @@ body {
     resize: none;
     background: var(--bg-secondary);
     color: var(--text-primary);
+    min-height: 300px;
 }
 
 .row-modal-content-editable:hover {
@@ -347,7 +348,8 @@ body {
 .row-modal-content-display ul,
 .row-modal-content-display ol {
     margin: 0.5em 0;
-    padding-left: 1.5em;
+    padding-left: 0;
+    list-style: none;
 }
 
 .row-modal-content-display code {
@@ -371,6 +373,22 @@ body {
     margin: 0.5em 0;
     padding-left: 12px;
     color: var(--quote-color);
+}
+
+.row-modal-content-display input[type="checkbox"] {
+    display: none;
+}
+
+.row-modal-content-display li {
+    margin: 0.25em 0;
+    margin-left: 20px;
+}
+
+.row-modal-content-display li:before {
+    content: "- ";
+    margin-left: -20px;
+    margin-right: 8px;
+    color: var(--text-primary);
 }
 
 .row-modal-content-display.empty {
