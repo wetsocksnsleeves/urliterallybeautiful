@@ -86,7 +86,7 @@ function openRowModal(colIndex, rowIndex) {
     const charCountContainer = document.getElementById('charCountContainer');
 
     titleEl.textContent = row.name;
-    contentEl.textContent = row.description || '';
+    contentEl.value = row.description || '';
 
     // Display the markdown or empty state
     if (row.description) {
@@ -99,7 +99,7 @@ function openRowModal(colIndex, rowIndex) {
         displayEl.classList.add('empty');
     }
 
-    displayEl.style.display = 'flex';
+    displayEl.style.display = 'block';
     contentEl.style.display = 'none';
     charCountContainer.style.display = 'none';
 
@@ -139,7 +139,7 @@ function openRowModal(colIndex, rowIndex) {
     };
 
     newContentEl.addEventListener('blur', function() {
-        const markdown = this.textContent.trim();
+        const markdown = this.value.trim();
         data.columns[colIndex].rows[rowIndex].description = markdown;
         updateURL();
 
@@ -153,16 +153,16 @@ function openRowModal(colIndex, rowIndex) {
             newDisplayEl.textContent = 'Description...';
             newDisplayEl.classList.add('empty');
         }
-        newDisplayEl.style.display = 'flex';
+        newDisplayEl.style.display = 'block';
         editBtn.style.display = 'block';
         newContentEl.style.display = 'none';
         charCountContainer.style.display = 'none';
     });
 
     newContentEl.addEventListener('input', function() {
-        let text = this.textContent;
+        let text = this.value;
         if (text.length > 200) {
-            this.textContent = text.substring(0, 200);
+            this.value = text.substring(0, 200);
         }
         updateCharCount();
     });
@@ -183,7 +183,7 @@ function openRowModal(colIndex, rowIndex) {
 
 function updateCharCount() {
     const contentEl = document.getElementById('rowModalContentEditable');
-    document.getElementById('charCount').textContent = contentEl.textContent.length;
+    document.getElementById('charCount').textContent = contentEl.value.length;
 }
 
 function closeRowModal() {
@@ -414,6 +414,30 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function getContenteditableText(element) {
+    // Convert contenteditable HTML to plain text with proper newlines
+    const html = element.innerHTML;
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+
+    let text = '';
+    for (let node of temp.childNodes) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            text += node.textContent;
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+            if (node.tagName === 'BR') {
+                text += '\n';
+            } else {
+                text += node.textContent;
+                if (node.tagName === 'DIV' || node.tagName === 'P') {
+                    text += '\n';
+                }
+            }
+        }
+    }
+    return text.trim();
 }
 
 // Load state from URL if present

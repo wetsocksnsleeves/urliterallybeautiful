@@ -132,10 +132,11 @@ body {
     border: 1px solid #ddd;
     border-radius: 4px;
     padding: 12px;
-    min-height: 100px;
     outline: none;
     cursor: text;
     transition: border-color 0.2s;
+    flex: 1;
+    resize: none;
 }
 
 .row-modal-content-editable:hover {
@@ -152,14 +153,15 @@ body {
     font-size: 12px;
     color: #999;
     margin-top: 8px;
+    flex-shrink: 0;
 }
 
 .row-modal-content-display {
     padding: 12px;
-    min-height: 100px;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
+    display: block;
+    word-wrap: break-word;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .row-modal-content-display a {
@@ -169,6 +171,38 @@ body {
 
 .row-modal-content-display a:hover {
     text-decoration: underline;
+}
+
+.row-modal-content-display p {
+    margin: 0.5em 0;
+    line-height: 1.5;
+}
+
+.row-modal-content-display ul,
+.row-modal-content-display ol {
+    margin: 0.5em 0;
+    padding-left: 1.5em;
+}
+
+.row-modal-content-display code {
+    background: #f0f0f0;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+.row-modal-content-display pre {
+    background: #f0f0f0;
+    padding: 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+.row-modal-content-display blockquote {
+    border-left: 3px solid #ddd;
+    margin: 0.5em 0;
+    padding-left: 12px;
+    color: #666;
 }
 
 .row-modal-content-display.empty {
@@ -185,6 +219,8 @@ body {
     font-size: 14px;
     transition: color 0.2s;
     margin-bottom: 8px;
+    flex-shrink: 0;
+    align-self: flex-start;
 }
 
 .edit-description-btn:hover,
@@ -217,6 +253,8 @@ body {
     padding: 20px;
     flex: 1;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .row-modal-actions {
