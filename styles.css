@@ -324,6 +324,15 @@ button.secondary:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: opacity 0.2s;
+}
+
+.row-block[draggable="true"] {
+    cursor: grab;
+}
+
+.row-block[draggable="true"]:active {
+    cursor: grabbing;
 }
 
 .row-name {

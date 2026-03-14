@@ -10,6 +10,8 @@ let data = {
     ]
 };
 
+let draggedItem = null;
+
 function addColumn() {
     const columnName = prompt('Enter column name:');
     if (!columnName) return;
@@ -187,6 +189,66 @@ function deleteCurrentRow() {
     }
 }
 
+function handleDragStart(e) {
+    draggedItem = {
+        colIndex: parseInt(e.target.dataset.colIndex),
+        rowIndex: parseInt(e.target.dataset.rowIndex)
+    };
+    e.target.style.opacity = '0.5';
+    e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleDragEnd(e) {
+    e.target.style.opacity = '1';
+    draggedItem = null;
+    document.querySelectorAll('.row-block').forEach(block => {
+        block.style.opacity = '1';
+    });
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+}
+
+function handleDragEnter(e) {
+    if (draggedItem && e.target.classList.contains('row-block')) {
+        e.target.style.opacity = '0.5';
+    }
+}
+
+function handleDragLeave(e) {
+    if (e.target.classList.contains('row-block')) {
+        e.target.style.opacity = '1';
+    }
+}
+
+function handleDrop(e, targetColIndex) {
+    e.preventDefault();
+
+    if (!draggedItem) return;
+
+    const sourceColIndex = draggedItem.colIndex;
+    const sourceRowIndex = draggedItem.rowIndex;
+
+    if (sourceColIndex === targetColIndex && sourceRowIndex === targetColIndex) {
+        return; // Same position, no change
+    }
+
+    // Get the row being moved
+    const row = data.columns[sourceColIndex].rows[sourceRowIndex];
+
+    // Remove from source column
+    data.columns[sourceColIndex].rows.splice(sourceRowIndex, 1);
+
+    // Add to target column
+    data.columns[targetColIndex].rows.push(row);
+
+    // Update URL and re-render
+    updateURL();
+    render();
+}
+
 function render() {
     const container = document.getElementById('columnsContainer');
 
@@ -231,13 +293,28 @@ function render() {
         column.rows.forEach((row, rowIndex) => {
             const rowBlock = document.createElement('div');
             rowBlock.className = 'row-block';
+            rowBlock.draggable = true;
+            rowBlock.dataset.colIndex = colIndex;
+            rowBlock.dataset.rowIndex = rowIndex;
             rowBlock.innerHTML = `<div class="row-name">${escapeHtml(row.name)}</div>`;
             rowBlock.style.cursor = 'pointer';
-            rowBlock.onclick = function() {
+            rowBlock.onclick = function(e) {
+                if (e.button !== 0 || e.target !== this) return; // Only left click on the block itself
                 openRowModal(colIndex, rowIndex);
             };
+
+            // Drag event listeners
+            rowBlock.addEventListener('dragstart', handleDragStart);
+            rowBlock.addEventListener('dragend', handleDragEnd);
+
             rowsDiv.appendChild(rowBlock);
         });
+
+        // Make rows container droppable
+        rowsDiv.addEventListener('dragover', handleDragOver);
+        rowsDiv.addEventListener('drop', (e) => handleDrop(e, colIndex));
+        rowsDiv.addEventListener('dragenter', handleDragEnter);
+        rowsDiv.addEventListener('dragleave', handleDragLeave);
 
         const inputDiv = document.createElement('div');
         inputDiv.className = 'add-row-input';
